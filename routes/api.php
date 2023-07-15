@@ -64,7 +64,7 @@
   });
 
   // Sprawdzenie czy token isnieje.
-  $router->get('/token', function(checkedAccessToken $checkedAccessToken, Request $request, Encrypter $encrypter) {
+  $router->post('/token', function(checkedAccessToken $checkedAccessToken, Request $request, Encrypter $encrypter) {
     if (!$request['access_token']) {
       return callback_return(false, 400, "Missing required parameter access_token");
     }else {

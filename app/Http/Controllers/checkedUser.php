@@ -75,11 +75,13 @@
             ini_set('MAIL_ENCRYPTION', 'tls');
             ini_set('auth_username', 'mail@fastmess.ct8.pl');
             ini_set('auth_password', 'B6~h5iiej.8fhkVOO0Ut>1zeXguO54');
+            define('MAIL_APP_NAME', 'FastMess');
             $to = $this->email;
             $subject = $this->subject_mail;
             $message = $this->body_mail;
-            $headers = 'From: mail@fastmess.ct8.pl' . "\r\n";
-            $headers .= 'Reply-To: mail@fastmess.ct8.pl' . "\r\n";
+            $headers = 'From: '.MAIL_APP_NAME.' <mail@fastmess.ct8.pl>' . "\r\n";
+            $headers .= 'Reply-To: '.MAIL_APP_NAME.' <mail@fastmess.ct8.pl>' . "\r\n";
+            $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
             $headers .= 'X-Mailer: PHP/' . phpversion();
             $mailSent = mail($to, $subject, $message, $headers);
             return $mailSent;
@@ -125,8 +127,10 @@
             
             if ($insert_code) {
                 return callback_return(true, 200, array(
-                    "message" => "Check your email",
-                    "request_token" => $request_token,
+                    "message" => array(
+                        "message" => "Check your email",
+                        "request_token" => $request_token,
+                    ),
                     "code" => $code_generate
                 ));
             }else {
@@ -150,9 +154,12 @@
                     return callback_return(false,  403, 'User is bot');
                 }else {
                     $this->email = $checkEmail->description->email;
-                    # $this->mailSend();
                     $req = $this->generateCodeForUser($checkEmail->description->user_id)->getData();
-                    return callback_return(true, 200, $req->description);
+                    $this->subject_mail = "Kod autoryzacji - {$req->description->code}";
+                    $this->body_mail = "Kod autoryzacji - <b>{$req->description->code}</b>";
+                    $this->mailSend();
+                    
+                    return callback_return(true, 200, $req->description->user);
                 }
             }
         }
