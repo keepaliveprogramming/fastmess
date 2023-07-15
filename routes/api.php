@@ -10,7 +10,7 @@
   
   use GuzzleHttp\Client;
   use App\Http\Controllers\checkedAccessToken;
-  use App\Http\Controllers\checksTokenForBot;
+  use App\Http\Controllers\Bot;
   use App\Http\Controllers\checkedUser;
   use App\Http\Controllers\MessagesSender;
   use League\CommonMark\CommonMarkConverter;
@@ -84,16 +84,7 @@
   /**
    * Bot, weryfikacja i działanie z nim.
    */
-  $router->get('/bot{user_id}:{token}', function ($user_id, $token) {
-    $bot = DB::table('bots_token')->select('user_id')->where('user_id', $user_id)->where('token', $token)->first();
-    if ($bot) {
-      $user_ids = DB::table('users')->select('user_name','user_lastname', 'is_bot', 'is_real_bot', 'is_support', 'is_father')->where('user_id', $user_id)->first();
-      if ($user_ids) {
-        return callback_return(true, 200, $user_ids);
-      } else {
-        return callback_return(false,  401, 'Unauthorized');
-      }
-    }else {
-      return callback_return(false,  401, 'Unauthorized');
-    }
+  $router->get('/bot{user_id}:{token}/getMe', function ($user_id, $token) {
+    $bot = new Bot;
+    return $bot->getMe($user_id, $token);
   });
