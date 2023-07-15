@@ -84,15 +84,7 @@
             $mailSent = mail($to, $subject, $message, $headers);
             return $mailSent;
         }
-        /*protected function generateAccessTokenAndRefresh($user_id) {
-            if (!$user_id) {
-                return callback_return(false, 400, 'Missing required parametr user_id');
-            }else {
-                $access_token = Str::random(32);
-                $refresh_token = Str::random(32);
-                $crypto_access = strtoupper(sha1($access_token));
-            }
-        }*/
+        
         /**
          * Weryfikacja kodu jednorazowego logowania dla x użytkownika.
          */
@@ -107,8 +99,9 @@
             }else if ($check->request_token != $request_token) {
                 return callback_return(false, 400, 'Invalid request_token');
             }else {
+                $checkedAccessToken = new checkedAccessToken;
+                return $checkedAccessToken->createAccessToken($check->user_id);
                 $del = DB::delete('DELETE FROM code_auth WHERE request_token = ?', array($request_token));
-
             }
         }
         /**
@@ -166,7 +159,16 @@
         /**
          * Sprawdzenie kodu weryfikacyjnego który został wysłany do użytkownika.
          */
-        public function checkedCode() {
-
+        public function checkedCode(Request $request) {
+            $code_normal = $request['code'];
+            $request_token = $request['request_token'];
+            if (!$code_normal) {
+                return callback_return(false, 400, 'Missing required parametr code');
+            }else {
+                $code = $code_normal;
+                $code_checked = $this->checkedCodeUser($code, $request_token);
+                return $code_checked;
+            }
+            
         }
     }

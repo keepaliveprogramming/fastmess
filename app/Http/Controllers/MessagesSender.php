@@ -17,6 +17,9 @@
                 return callback_return(true, 200, $chat_check);
             }
         }
+        public function getChats($user_id) {
+            $getChat = DB::table('chats')->select()->where()->get();
+        }
         public function sendMessage($access_token, Request $request, checkedAccessToken $checkedAccessToken) {
             $check = $checkedAccessToken->index($access_token)->getData();
             $check_chat = $this->chechedChatId($request['chat_id'])->getData();
@@ -26,7 +29,10 @@
                 return callback_return(false, 400, 'Missing required parametr chat_id');
             }else if (!$check_chat->ok) {
                 return callback_return($check_chat->ok, $check_chat->error_code, $check_chat->description);
+            }else if (!$request['text']) {
+                return callback_return(false, 400, 'Missing required parametr text');
             }else {
+                $text = $request['text'];
                 $insertData = array(
                     "id_mess" => NULL,
                     "id_message" => rand(),

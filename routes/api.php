@@ -8,6 +8,8 @@
   use Illuminate\Contracts\Encryption\Encrypter;
   use Illuminate\Http\RedirectResponse;
   
+  use GuzzleHttp\Client;
+  use Illuminate\Support\Facades\Storage;
 
   use App\Http\Controllers\checkedAccessToken;
   use App\Http\Controllers\checksTokenForBot;
@@ -75,9 +77,11 @@
     return $checkedUser->creatingLoginForUser($request['email']);
   });
 
+  $router->get('/checkCode', 'checkedUser@checkedCode');
+
   $router->get('/user/{access_token}/getMe', 'checkedUser@checkedUserInAccessToken');
   $router->get('/user/{access_token}/sendMessage', 'MessagesSender@sendMessage');
-
+  $router->get('/createBot', 'checksTokenForBot@createBot');
   /**
    * Bot, weryfikacja i działanie z nim.
    */
