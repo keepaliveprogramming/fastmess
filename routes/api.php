@@ -9,8 +9,6 @@
   use Illuminate\Http\RedirectResponse;
   
   use GuzzleHttp\Client;
-  use Illuminate\Support\Facades\Storage;
-
   use App\Http\Controllers\checkedAccessToken;
   use App\Http\Controllers\checksTokenForBot;
   use App\Http\Controllers\checkedUser;
@@ -19,6 +17,10 @@
   use League\CommonMark\Environment;
 
   $router->get('/', function () {
+    return callback_return(false, 404, "Not found");
+  });
+
+  $router->post('/', function () {
     return callback_return(false, 404, "Not found");
   });
 
@@ -70,14 +72,11 @@
     }
   });
 
-  $router->get('/addtoken', function(checkedAccessToken $checkedAccessToken) {
-    return $checkedAccessToken->createAccessToken(5);
-  });
-  $router->get('/authorization', function(Request $request, checkedUser $checkedUser) {
+  $router->post('/authorization', function(Request $request, checkedUser $checkedUser) {
     return $checkedUser->creatingLoginForUser($request['email']);
   });
 
-  $router->get('/checkCode', 'checkedUser@checkedCode');
+  $router->post('/checkCode', 'checkedUser@checkedCode');
 
   $router->get('/user/{access_token}/getMe', 'checkedUser@checkedUserInAccessToken');
   $router->get('/user/{access_token}/sendMessage', 'MessagesSender@sendMessage');
@@ -98,4 +97,3 @@
       return callback_return(false,  401, 'Unauthorized');
     }
   });
-
