@@ -90,6 +90,10 @@
   $router->get('/user/{access_token}/getMe', 'checkedUser@checkedUserInAccessToken');
   $router->get('/user/{access_token}/sendMessage', 'MessagesSender@sendMessage');
   $router->get('/createBot', 'checksTokenForBot@createBot');
+
+  $router->post('/user/{access_token}/getMe', 'checkedUser@checkedUserInAccessToken');
+  $router->post('/user/{access_token}/sendMessage', 'MessagesSender@sendMessage');
+  $router->post('/createBot', 'checksTokenForBot@createBot');
   /**
    * Bot, weryfikacja i działanie z nim.
    */
