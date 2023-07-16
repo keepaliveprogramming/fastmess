@@ -57,9 +57,12 @@
    * Autoryzacja użytkownika, poprzez email.
    * Dane wejściowe: email type string.
    * Zwraca: request_token,message: Check your email. Oraz wysłanie e-mail do użytkownika z kodem.
-   * Method: POST.
+   * Method: GET,POST.
    */
   $router->post('/authorization', function(Request $request, checkedUser $checkedUser) {
+    return $checkedUser->creatingLoginForUser($request['email']);
+  });
+  $router->get('/authorization', function(Request $request, checkedUser $checkedUser) {
     return $checkedUser->creatingLoginForUser($request['email']);
   });
 

@@ -32,9 +32,9 @@
                 }
             }
         }
-        public function getAva($user_id) {
+        public function getAvatar($user_id = '') {
             $ava = DB::table('ava_users')->select('image_url', 'id_ava', 'user_id', 'is_home', 'dt_add')->where('user_id', $user_id)->get();
-            return $ava;
+            return callback_return(true, 200, $ava);
         }
         /**
          * Weryfikacja użytkownika czy isnieje czy nie.
@@ -50,14 +50,15 @@
                 $s_tb = 'user_id';
             }
             if ($is_access_token) {
-                $select_ac = array('email', 'descr', 'dt_last_active', 'alias');
+                $select_ac = array('email', 'dt_last_active');
             }else $select_ac = array();
-            $user_ids = DB::table('users')->select('user_name','user_lastname', 'is_bot', 'is_real_bot', 'is_support', 'is_father', 'user_id', $s_tb, ...$select_ac)->where($tbl_sel, $user_id)->first();
+            $user_ids = DB::table('users')->select('user_name','user_lastname', 'is_bot', 'is_real_bot', 'is_support', 'is_father', 'user_id', 'descr', 'alias', $s_tb, ...$select_ac)->where($tbl_sel, $user_id)->first();
            // $res = new stdClass();
             if ($user_ids) {
                 $res['ok'] = true;
                 $res['error_code'] = 200;
                 $res['description'] = $user_ids;
+                // $res['ava'] = $this->getAvatar($user_ids['user_id']);
             } else {
                 $res['ok'] = false;
                 $res['error_code'] = 404;
