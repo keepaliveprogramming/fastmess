@@ -101,9 +101,9 @@
             }else if ($check->request_token != $request_token) {
                 return callback_return(false, 400, 'Invalid request_token');
             }else {
+                $del = DB::delete("DELETE FROM code_auth WHERE request_token = ?", array($request_token));
                 $checkedAccessToken = new checkedAccessToken;
                 return $checkedAccessToken->createAccessToken($check->user_id);
-                $del = DB::delete("DELETE FROM code_auth WHERE request_token = '?'", array($request_token));
             }
         }
         /**
