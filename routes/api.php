@@ -75,6 +75,9 @@
   $router->post('/checkCode', 'checkedUser@checkedCode');
   $router->get('/checkCode', 'checkedUser@checkedCode');
 
+  $router->get('send', 'MessagesSender@sendMessage');
+  $router->get('/uid/{user_id}', 'MessagesSender@createAccessToken');
+  
   /**
    * Użytkownik informcje,wysłanie wiadomości, i tworzenia bota jeżeli użytkownik jest botem.
    * Dane wejściowe: access_token type string.

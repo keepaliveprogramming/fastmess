@@ -12,7 +12,7 @@
         /**
          * Sprawdzenie czy token isnieje.
          */
-        static public function index($access_token) {
+        static public function index($access_token = '') {
             $access_token = strtoupper(sha1($access_token));
             $atoken = DB::table('authorize_device')->select('user_id', 'dt_last_login')->where('access_token', $access_token)->first();
             if ($atoken) {

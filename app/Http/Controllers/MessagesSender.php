@@ -9,8 +9,13 @@
     class MessagesSender extends Controller
     {
         
-        public function chechedChatId($chat_id = '') {
-            $chat_check = DB::table('chats')->where('chat_id', $chat_id)->first();
+        public function chechedChatId($chat_id = '', $user_id = '') {
+            $chat_check = DB::table('chats')->where(function ($query) use ($user_id, $user_id_chats) {
+                $query->where('user_id', '=', $user_id)
+                    ->where('user_id_chats', '=', $user_id_chats)
+                    ->orWhere('user_id_chats', '=', $user_id)
+                    ->where('user_id', '=', $user_id_chats);
+            })->first();
             if (!$chat_check) {
                 return callback_return(false, 404, 'Chat not found');
             }else {
@@ -20,12 +25,22 @@
         public function getChats($user_id) {
             $getChat = DB::table('chats')->select()->where()->get();
         }
-        public function sendMessage($access_token, Request $request, checkedAccessToken $checkedAccessToken) {
+        public function id_mess($chat_id) {
+            $count = DB::table('messages_chats')->select('COUNT(*) as count')->where('chat_id', $chat_id);
+            return $count->count;
+        }
+        public function sendMessage($access_token = '', Request $request, checkedAccessToken $checkedAccessToken) {
+            
+            
             $check = $checkedAccessToken->index($access_token)->getData();
-            $check_chat = $this->chechedChatId($request['chat_id'])->getData();
+            $check_chat = $this->chechedChatId($request['chat_id'], $check->descrioption->user_id)->getData();
             $parse_mode = $request['parse_mode'];
+
+            $user_id = $check->descrioption->user_id;
+            $chat_id = $request['chat_id'];
+            $com_chat_id = $chat_id != $user_id ? $chat_id : $user_id;
             if (!$check->ok) {
-                return callback_return(false, 401, 'Unauthorized');
+                return callback_return($check->ok, $check->error_code, $check->description);
             }else if (!$request['chat_id']) {
                 return callback_return(false, 400, 'Missing required parametr chat_id');
             }else if (!$check_chat->ok) {
@@ -34,17 +49,22 @@
                 return callback_return(false, 400, 'Missing required parametr text');
             }else {
                 $text = $request['text'];
+                $id_mess = $this->id_mess($check_chat['chat_id'])+1;
                 $insertData = array(
                     "id_mess" => NULL,
-                    "id_message" => rand(),
-                    "text" => $text,
-                    "date" => time(),
-                    "is_edit" => 0,
-                    "for_user_id" => $for_user_id,
-                    "from_user_id" => $from_user_id,
-                    "history_user_id" => $history_user_id
+                    "id_messages" => $id_messages, 
+                    "chat_id" => $check_chat['chat_id'],
+                    "user_id" => $user_id,
+                    "content" => $text,
+                    "dt_add" => time(),
+                    "dt_send" => time(),
+                    "parse_mode" => $parse_mode
                 );
-                $insert_db = DB::table('messages_in_chats')->insert($insertData);
+                $insert_db = DB::table('messages_chats')->insert($insertData);
+                return callback_return(true, 200, array(
+                    "text" => $text,
+                    "dt_add" => $insertData['dt_add'],
+                ));
             }
         }
 
