@@ -23,6 +23,7 @@
         public function sendMessage($access_token, Request $request, checkedAccessToken $checkedAccessToken) {
             $check = $checkedAccessToken->index($access_token)->getData();
             $check_chat = $this->chechedChatId($request['chat_id'])->getData();
+            $parse_mode = $request['parse_mode'];
             if (!$check->ok) {
                 return callback_return(false, 401, 'Unauthorized');
             }else if (!$request['chat_id']) {

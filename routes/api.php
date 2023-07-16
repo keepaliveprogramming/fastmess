@@ -15,6 +15,7 @@
   use App\Http\Controllers\MessagesSender;
   use League\CommonMark\CommonMarkConverter;
   use League\CommonMark\Environment;
+  use App\Http\Controllers\User;
 
   $router->get('/', function () {
     return callback_return(false, 404, "Not found");
@@ -26,67 +27,60 @@
 
   /**
    * Informacja o użytkowniku poprzez user_id, lub alias.
+   * Dane wejściowe: user_id type int.
+   * Zwraca: user_name,user_lastname,user_id,alias,descr.
+   * Method: GET,POST.
    */
-  $router->get('/users/{user_id}', function ($user_id) {
-    $user = DB::table('users')->select('user_name', 'user_lastname', 'user_id', 'alias', 'descr')->where('user_id', $user_id)->orWhere('alias', $user_id)->first();
-    if ($user) {
-      return callback_return(true, 200, $user);
-    } else {
-      return callback_return(false, 404, "User not found");
-    }
-    if (!$user_id) {
-      return callback_return(false, 400, 'Missing required parametr user_id');
-    }
-  });
-  
+  $router->get('/users/{user_id}', 'User@getUser');
+  $router->post('/users/{user_id}', 'User@getUser');
+
   /** 
    * Szukanie użytkownika po imieniu lub nazwisku lub aliasu, bądź wszystkie pasujące do siebie rekordy z tych kolumn.
    * Wyszukiwarka użytkownika z tabeli.
+   * Dane weyjściowe: search type string.
+   * Zwraca: user_name,user_lastname,alias,user_id.
+   * Method: GET,POST.
    */
-  $router->get('/users', function (Request $request) {
-    if (!$request['search']) {
-      return callback_return(false, 400, 'Missing required parameter search');
-    }else {
-      $users = DB::table('users')->select('user_name', 'user_lastname', 'user_id', 'alias')
-      ->where('user_name', 'LIKE', '%'.$request['search'].'%')
-      ->orWhere('user_lastname', 'LIKE', '%'.$request['search'].'%')
-      ->orWhere('alias', 'LIKE', '%'.$request['search'].'%')
-      ->get();
-      $ok = true;
-      $code = 200;
-      if (is_array($users) && $users != array()) {
-        $users = 'no_users';
-        $ok = false;
-        $code = 404;
-      }
-      return callback_return($ok, $code, $users);
-    }
-  });
+  $router->get('/users', 'User@getUsers');
+  $router->post('/users', 'User@getUsers');
 
-  // Sprawdzenie czy token isnieje.
-  $router->post('/token', function(checkedAccessToken $checkedAccessToken, Request $request, Encrypter $encrypter) {
-    if (!$request['access_token']) {
-      return callback_return(false, 400, "Missing required parameter access_token");
-    }else {
-      return $checkedAccessToken->index($request['access_token'], $encrypter);
-    }
-  });
+  /**
+   * Sprawdzenie czy token isnieje, jak tak to wyświetli ostanią aktywność i id użytkownika.
+   * Dane wejściowe: access_token type string.
+   * Zwraca: user_id,dt_last_login.
+   * Method: GET,POST.
+   */
+  $router->get('/token', 'checkedAccessToken@index');
+  $router->post('/token', 'checkedAccessToken@index');
 
-  $router->get('/token', function(checkedAccessToken $checkedAccessToken, Request $request, Encrypter $encrypter) {
-    if (!$request['access_token']) {
-      return callback_return(false, 400, "Missing required parameter access_token");
-    }else {
-      return $checkedAccessToken->index($request['access_token'], $encrypter);
-    }
-  });
-
+  /**
+   * Autoryzacja użytkownika, poprzez email.
+   * Dane wejściowe: email type string.
+   * Zwraca: request_token,message: Check your email. Oraz wysłanie e-mail do użytkownika z kodem.
+   * Method: POST.
+   */
   $router->post('/authorization', function(Request $request, checkedUser $checkedUser) {
     return $checkedUser->creatingLoginForUser($request['email']);
   });
 
+  /**
+   * Weryfikacja kodu autoryzacyjnego.
+   * Dane weyjściowe: code type int, request_token type string.
+   * Zwraca: access_toke,refresh_token,user_id,dt_login. Jeżeli dane są poprawne.
+   * Method: GET,POST.
+   */
   $router->post('/checkCode', 'checkedUser@checkedCode');
   $router->get('/checkCode', 'checkedUser@checkedCode');
 
+  /**
+   * Użytkownik informcje,wysłanie wiadomości, i tworzenia bota jeżeli użytkownik jest botem.
+   * Dane wejściowe: access_token type string.
+   * Zwraca: 
+   *    getMe: user_name,user_lastname,is_bot,is_real_bot,is_support,is_father,user_id,email,descr,dt_last_login,alias.
+   *    sendMessage: [].
+   *    createBot: token.
+   * Method: GET,POST.
+   */
   $router->get('/user/{access_token}/getMe', 'checkedUser@checkedUserInAccessToken');
   $router->get('/user/{access_token}/sendMessage', 'MessagesSender@sendMessage');
   $router->get('/createBot', 'checksTokenForBot@createBot');
@@ -96,8 +90,9 @@
   $router->post('/createBot', 'checksTokenForBot@createBot');
   /**
    * Bot, weryfikacja i działanie z nim.
+   * Dane wejściowe: user_id type int, access_token type string.
+   * Zwraca: [].
+   * Method: GET,POST.
    */
-  $router->get('/bot{user_id}:{token}/getMe', function ($user_id, $token) {
-    $bot = new Bot;
-    return $bot->getMe($user_id, $token);
-  });
+  $router->get('/bot{user_id}:{token}/getMe', 'Bot@getMe');
+  $router->post('/bot{user_id}:{token}/getMe', 'Bot@getMe');

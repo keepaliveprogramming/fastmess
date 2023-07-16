@@ -21,6 +21,9 @@
             } else {
                 return callback_return(false,  401, 'Unauthorized');
             }
+            if (!$access_token) {
+                return callback_return(false, 400, "Missing required parameter access_token");
+            }
         }
         /**
          * Tworzenia access_token.
