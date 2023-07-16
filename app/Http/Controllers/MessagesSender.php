@@ -9,7 +9,7 @@
     class MessagesSender extends Controller
     {
         
-        public function chechedChatId($chat_id = '', $user_id = '') {
+        public function chechedChatId($user_id_chats = '', $user_id = '') {
             $chat_check = DB::table('chats')->where(function ($query) use ($user_id, $user_id_chats) {
                 $query->where('user_id', '=', $user_id)
                     ->where('user_id_chats', '=', $user_id_chats)
@@ -25,18 +25,18 @@
         public function getChats($user_id) {
             $getChat = DB::table('chats')->select()->where()->get();
         }
-        public function id_mess($chat_id) {
-            $count = DB::table('messages_chats')->select('COUNT(*) as count')->where('chat_id', $chat_id);
-            return $count->count;
+        public function id_message($chat_id) {
+            $count = DB::table('messages_chats')->where('chat_id', $chat_id)->count();
+            return $count;
         }
-        public function sendMessage($access_token = '', Request $request, checkedAccessToken $checkedAccessToken) {
-            
+        public function sendMessage($access_token, Request $request, checkedAccessToken $checkedAccessToken) {
+            $id_mess = array();
             
             $check = $checkedAccessToken->index($access_token)->getData();
-            $check_chat = $this->chechedChatId($request['chat_id'], $check->descrioption->user_id)->getData();
+            $check_chat = $this->chechedChatId($request['chat_id'], $check->description->user_id)->getData();
             $parse_mode = $request['parse_mode'];
 
-            $user_id = $check->descrioption->user_id;
+            $user_id = $check->description->user_id;
             $chat_id = $request['chat_id'];
             $com_chat_id = $chat_id != $user_id ? $chat_id : $user_id;
             if (!$check->ok) {
@@ -49,10 +49,11 @@
                 return callback_return(false, 400, 'Missing required parametr text');
             }else {
                 $text = $request['text'];
-                $id_mess = $this->id_mess($check_chat['chat_id'])+1;
+                $id_mess = $this->id_message($check_chat['chat_id']);
+                
                 $insertData = array(
                     "id_mess" => NULL,
-                    "id_messages" => $id_messages, 
+                    "id_messages" => $id_mess, 
                     "chat_id" => $check_chat['chat_id'],
                     "user_id" => $user_id,
                     "content" => $text,
