@@ -72,11 +72,20 @@
     }
   });
 
+  $router->get('/token', function(checkedAccessToken $checkedAccessToken, Request $request, Encrypter $encrypter) {
+    if (!$request['access_token']) {
+      return callback_return(false, 400, "Missing required parameter access_token");
+    }else {
+      return $checkedAccessToken->index($request['access_token'], $encrypter);
+    }
+  });
+
   $router->post('/authorization', function(Request $request, checkedUser $checkedUser) {
     return $checkedUser->creatingLoginForUser($request['email']);
   });
 
   $router->post('/checkCode', 'checkedUser@checkedCode');
+  $router->get('/checkCode', 'checkedUser@checkedCode');
 
   $router->get('/user/{access_token}/getMe', 'checkedUser@checkedUserInAccessToken');
   $router->get('/user/{access_token}/sendMessage', 'MessagesSender@sendMessage');
