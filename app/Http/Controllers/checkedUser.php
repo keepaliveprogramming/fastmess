@@ -103,7 +103,7 @@
             }else {
                 $checkedAccessToken = new checkedAccessToken;
                 return $checkedAccessToken->createAccessToken($check->user_id);
-                $del = DB::delete('DELETE FROM code_auth WHERE request_token = ?', array($request_token));
+                $del = DB::delete("DELETE FROM code_auth WHERE request_token = '?'", array($request_token));
             }
         }
         /**
@@ -127,7 +127,7 @@
             
             if ($insert_code) {
                 return callback_return(true, 200, array(
-                    "message" => array(
+                    "user" => array(
                         "message" => "Check your email",
                         "request_token" => $request_token,
                     ),

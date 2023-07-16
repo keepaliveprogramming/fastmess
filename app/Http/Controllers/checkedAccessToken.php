@@ -46,7 +46,7 @@
                 $db = DB::table('authorize_device')->insert($data_added);
                 $data_added['added'] = $db;
                 $data_added['access_token'] = $access_token;
-                return $data_added;
+                return callback_return(true, 200, $data_added);
             }
         }
 
