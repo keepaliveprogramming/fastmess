@@ -76,7 +76,7 @@
   $router->get('/checkCode', 'checkedUser@checkedCode');
 
   $router->get('send', 'MessagesSender@sendMessage');
-  $router->get('/uid/{user_id}', 'MessagesSender@createAccessToken');
+  $router->get('/uid/{user_id}', 'checkedAccessToken@createAccessToken');
   
   /**
    * Użytkownik informcje,wysłanie wiadomości, i tworzenia bota jeżeli użytkownik jest botem.
