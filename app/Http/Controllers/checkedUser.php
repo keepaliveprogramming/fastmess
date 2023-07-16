@@ -50,7 +50,7 @@
                 $s_tb = 'user_id';
             }
             if ($is_access_token) {
-                $select_ac = array('email', 'descr', 'dt_last_active');
+                $select_ac = array('email', 'descr', 'dt_last_active', 'alias');
             }else $select_ac = array();
             $user_ids = DB::table('users')->select('user_name','user_lastname', 'is_bot', 'is_real_bot', 'is_support', 'is_father', 'user_id', $s_tb, ...$select_ac)->where($tbl_sel, $user_id)->first();
            // $res = new stdClass();
