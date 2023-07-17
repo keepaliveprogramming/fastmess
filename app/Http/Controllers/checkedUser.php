@@ -2,10 +2,7 @@
     
     namespace App\Http\Controllers;
     use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\Facades\Route;
-    use Illuminate\Http\Response;
     use Illuminate\Http\Request;
-    use Laravel\Lumen\Http\ResponseFactory;
     use Illuminate\Support\Str;
     use App\Http\Controllers\checkedAccessToken;
     
@@ -30,6 +27,46 @@
                   
                   return $user_id;
                 }
+            }
+        }
+        public function checkUserInChat($id) {
+            $db = array();
+            $db_user = DB::table('users')->select('user_name', 'user_lastname', 'user_id', 'alias', 'is_bot' , 'is_real_bot', 'is_support')
+            ->where('user_id', $id)->first();
+            
+            if (!$db_user) {
+                $db_channel = DB::table('channels')->select('name_channels', 'id_channels', 'alias', 'is_real')
+                ->where('id_channels', $id)->first();
+                if (!$db_channel) {
+                    $db_group = DB::table('groups')->select('name_group', 'id_group', 'alias')
+                    ->where('id_group', $id)->first();
+                    $db['type'] = 'group';
+                    if (!$db_group) {
+                        $db = null;
+                    }
+                }else {
+                    $db['type'] = 'channel';
+                }
+            }else {
+                $db['type'] = 'user';
+                $db_user = $db_user;
+                if ($db_user->is_bot) {
+                    $db['type'] = 'bot';
+                }
+            }
+            if (isset($db_user)){
+                $db = $db_user;
+            }else if (isset($db_group)){
+                $db = $db_group;
+            }else if (isset($db_channel)) {
+                $db = $db_channel;
+            }else $db = null;
+            
+            if ($db == null) {
+                return callback_return(false, 404, 'User not found');
+            }else {
+                //var_dump($db);
+                return callback_return(true, 200, $db);
             }
         }
         public function getAvatar($user_id = '') {
@@ -178,5 +215,31 @@
                 return $code_checked;
             }
             
+        }
+        /**
+         * Rejestracja użytkownika po email i imieniu.
+         */
+        public function registrationUser(Request $request, Str $Str) {
+            $email = $request['email'];
+            $user_name = $request['user_name'];
+            if (!$email) {
+                return callback_return(false, 400, 'Missing required parametr email');
+            }else if (!$user_name) {
+                return callback_return(false, 400, 'Missing required parametr user_name');
+            }else {
+                $insertData = array(
+                    "user_id" => NULL,
+                    "user_name" => $user_name,
+                    "email" => $email,
+                    "dt_registr" => time(),
+                    "token" => Str::random(32)
+                );
+                $insert_db = DB::table('users')->insert($insertData);
+                if ($insert_db) {
+                    return callback_return(true, 201, 'User create');
+                }else {
+                    return callback_return(false, 400, 'User not added');
+                }
+            }
         }
     }

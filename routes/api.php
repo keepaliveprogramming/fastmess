@@ -75,6 +75,8 @@
   $router->post('/checkCode', 'checkedUser@checkedCode');
   $router->get('/checkCode', 'checkedUser@checkedCode');
 
+
+  $router->get('/newtoken/{user_id}', 'checkedAccessToken@createAccessToken');
   
   /**
    * Użytkownik informcje,wysłanie wiadomości, i tworzenia bota jeżeli użytkownik jest botem.
@@ -88,10 +90,18 @@
   $router->get('/user/{access_token}/getMe', 'checkedUser@checkedUserInAccessToken');
   $router->get('/user/{access_token}/sendMessage', 'MessagesSender@sendMessage');
   $router->get('/createBot', 'checksTokenForBot@createBot');
+  $router->get('/user/{access_token}/getChats', 'MessagesSender@getChats');
+  $router->get('/user/{access_token}/getChat', 'MessagesSender@getChat');
+  $router->get('/user/{access_token}/createChat', 'MessagesSender@createChat');
 
   $router->post('/user/{access_token}/getMe', 'checkedUser@checkedUserInAccessToken');
   $router->post('/user/{access_token}/sendMessage', 'MessagesSender@sendMessage');
   $router->post('/createBot', 'checksTokenForBot@createBot');
+  $router->post('/user/{access_token}/getChats', 'MessagesSender@getChats');
+  $router->post('/user/{access_token}/getChat', 'MessagesSender@getChat');
+  $router->post('/user/{access_token}/createChat', 'MessagesSender@createChat');
+
+  
   /**
    * Bot, weryfikacja i działanie z nim.
    * Dane wejściowe: user_id type int, access_token type string.
