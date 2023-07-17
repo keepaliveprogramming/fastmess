@@ -46,7 +46,7 @@
         }
         public function getChatIn($encrypter, $chat_id, $checkedUser) {
             $chats = DB::table('messages_chats')->select()->where('chat_id', $chat_id)->orderBy('id_messages', 'asc')->get();
-            
+            $my = array();
             // $my['user'] = $checkedUser->checkUserInChat($chat_id)->getData()->description;
             foreach($chats as $chat) {
                 $my[] = array(
@@ -131,18 +131,22 @@
         public function getChat(Request $request, checkedUser $checkedUser, checkedAccessToken $checkedAccessToken, Encrypter $encrypter) {
             $check_token = $checkedAccessToken->index($request['access_token'])->getData();
             $chat_id = $request['chat_id'];
+            
+            $user_id = $check_token->description->user_id;
+            $uid = $chat_id == $user_id ? $user_id : $chat_id;
+            $u = $checkedUser->checkUserInChat($uid)->getData();
+            $chat = $this->chechedChatId($uid, $user_id)->getData();
+            
             if (!$check_token->ok) {
                 return callback_return($check_token->ok, $check_token->error_code, $check_token->description);
             }else if (!$chat_id) {
                 return callback_return(false, 400, 'Missing required parametr chat_id');
+            }else if (!$chat->ok) {
+                return callback_return(false, 400, 'Chat not found');
             }else {
-                $user_id = $check_token->description->user_id;
-                $uid = $chat_id == $user_id ? $user_id : $chat_id;
-                $u = $checkedUser->checkUserInChat($uid)->getData();
-                $chat = $this->chechedChatId($uid, $user_id)->getData();
                 return callback_return(true, 200, array(
-                    "user" => $checkedUser->checkUserInChat($uid)->getData()->description,
-                    "chat" => $this->getChatIn($encrypter, $chat->description->chat_id, $checkedUser)
+                "user" => $checkedUser->checkUserInChat($uid)->getData()->description,
+                "chat" => $this->getChatIn($encrypter, $chat->description->chat_id, $checkedUser)
                 ));
             }
         }
