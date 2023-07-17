@@ -51,11 +51,9 @@
    * Method: GET,POST.
    */
   $router->get('/token', function(Request $request, checkedAccessToken $checkedAccessToken) {
-    // 'checkedAccessToken@index'
     return $checkedAccessToken->index($request['access_token']);
   });
   $router->post('/token', function(Request $request, checkedAccessToken $checkedAccessToken) {
-    // 'checkedAccessToken@index'
     return $checkedAccessToken->index($request['access_token']);
   });
 
