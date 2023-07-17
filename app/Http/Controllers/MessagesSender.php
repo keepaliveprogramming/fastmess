@@ -92,8 +92,14 @@
                 "is_admin_group" => $group,
                 "is_admin_channels" => $channels,
             );
-            $datas_added = '';
-            return $datas_added;
+            $datas_added = DB::table('chats')->insert($insertData);
+            if ($datas_added) {
+                $return = 'Chat create';
+            }else {
+                $return = 'Chat not create';
+            }
+            
+            return $return;
         }
         public function createChat(Request $request, checkedAccessToken $checkedAccessToken, checkedUser $checkedUser) {
             $check_token = $checkedAccessToken->index($request['access_token'])->getData();
@@ -170,7 +176,7 @@
                     $my[] = array(
                         "chat_id" => $uid,
                         "user" => $u->description,
-                        "last_message" => self::getLastMessage($encrypter, $uid)
+                        "last_message" => self::getLastMessage($encrypter, $chat->chat_id)
                     );
                 }
                 return callback_return(true, 200, $my);

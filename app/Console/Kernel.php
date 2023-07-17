@@ -16,6 +16,12 @@ class Kernel extends ConsoleKernel
         //
     ];
 
+    protected $middleware = [
+        // ...
+        \App\Http\Middleware\HtmlPurifierMiddleware::class,
+    ];
+    
+
     /**
      * Define the application's command schedule.
      *

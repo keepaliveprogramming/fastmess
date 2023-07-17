@@ -19,7 +19,7 @@
             }else if (!$name_channels) {
                 return callback_return(false, 400, 'Missing required parametr name_channels');
             }else {
-                $id_channels = rand().rand();
+                $id_channels = rand();
                 $inData = array(
                     "id_channels" => $id_channels,
                     "name_channels" => $name_channels,

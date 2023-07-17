@@ -31,35 +31,32 @@
         }
         public function checkUserInChat($id) {
             $db = array();
-            $db_user = DB::table('users')->select('user_name', 'user_lastname', 'user_id', 'alias', 'is_bot' , 'is_real_bot', 'is_support')
-            ->where('user_id', $id)->first();
-            
+            $db_user = DB::table('users')->select('user_name', 'user_lastname', 'user_id', 'alias', 'is_bot' , 'is_real_bot', 'is_support', 'dt_last_active')
+                ->where('user_id', $id)->first();
             if (!$db_user) {
                 $db_channel = DB::table('channels')->select('name_channels', 'id_channels', 'alias', 'is_real')
                 ->where('id_channels', $id)->first();
                 if (!$db_channel) {
-                    $db_group = DB::table('groups')->select('name_group', 'id_group', 'alias')
+                $db_group = DB::table('groups')->select('name_group', 'id_group', 'alias')
                     ->where('id_group', $id)->first();
-                    $db['type'] = 'group';
-                    if (!$db_group) {
-                        $db = null;
-                    }
-                }else {
-                    $db['type'] = 'channel';
+                if (!$db_group) {
+                    $db = null;
                 }
-            }else {
-                $db['type'] = 'user';
-                $db_user = $db_user;
-                if ($db_user->is_bot) {
-                    $db['type'] = 'bot';
                 }
             }
             if (isset($db_user)){
                 $db = $db_user;
+                $db->type = 'user';
+                $db_user = $db_user;
+                if ($db_user->is_bot) {
+                $db->type = 'bot';
+                }
             }else if (isset($db_group)){
                 $db = $db_group;
+                $db->type = 'group';
             }else if (isset($db_channel)) {
                 $db = $db_channel;
+                $db->type = 'channel';
             }else $db = null;
             
             if ($db == null) {

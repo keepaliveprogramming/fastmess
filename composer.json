@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.1",
         "dusterio/link-preview": "^1.2",
+        "ezyang/htmlpurifier": "^4.16",
         "guzzlehttp/guzzle": "^7.7",
         "illuminate/cookie": "^10.15",
         "illuminate/mail": "^10.15",
