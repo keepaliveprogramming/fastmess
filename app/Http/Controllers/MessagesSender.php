@@ -164,7 +164,8 @@
                     $u = $checkedUser->checkUserInChat($uid)->getData();
                     
                     $my[] = array(
-                        "info" => $u->description,
+                        "chat_id" => $uid,
+                        "user" => $u->description,
                         "last_message" => self::getLastMessage($encrypter, $uid)
                     );
                 }

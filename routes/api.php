@@ -50,8 +50,14 @@
    * Zwraca: user_id,dt_last_login.
    * Method: GET,POST.
    */
-  $router->get('/token', 'checkedAccessToken@index');
-  $router->post('/token', 'checkedAccessToken@index');
+  $router->get('/token', function(Request $request, checkedAccessToken $checkedAccessToken) {
+    // 'checkedAccessToken@index'
+    return $checkedAccessToken->index($request['access_token']);
+  });
+  $router->post('/token', function(Request $request, checkedAccessToken $checkedAccessToken) {
+    // 'checkedAccessToken@index'
+    return $checkedAccessToken->index($request['access_token']);
+  });
 
   /**
    * Autoryzacja użytkownika, poprzez email.
@@ -101,7 +107,7 @@
   $router->post('/user/{access_token}/getChat', 'MessagesSender@getChat');
   $router->post('/user/{access_token}/createChat', 'MessagesSender@createChat');
 
-  
+
   /**
    * Bot, weryfikacja i działanie z nim.
    * Dane wejściowe: user_id type int, access_token type string.

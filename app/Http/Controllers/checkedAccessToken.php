@@ -6,6 +6,7 @@
     use Illuminate\Support\Facades\Route;
     use Illuminate\Contracts\Encryption\Encrypter;
     use Illuminate\Support\Str;
+    use Illuminate\Http\Request;
 
     class checkedAccessToken extends Controller
     {
@@ -13,12 +14,14 @@
          * Sprawdzenie czy token isnieje.
          */
         static public function index($access_token = '') {
+            $request = new Request();
             $access_token = strtoupper(sha1($access_token));
             $atoken = DB::table('authorize_device')->select('user_id', 'dt_last_login')->where('access_token', $access_token)->first();
             if ($atoken) {
                 //$atoken->rand = Str::random(128);
                 return callback_return(true, 200, $atoken);
             } else {
+                // Unauthorized
                 return callback_return(false,  401, 'Unauthorized');
             }
             if (!$access_token) {
