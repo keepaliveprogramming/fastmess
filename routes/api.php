@@ -92,15 +92,14 @@
    * Method: GET,POST.
    */
   $router->get('/user/{access_token}/getMe', 'checkedUser@checkedUserInAccessToken');
-  $router->get('/user/{access_token}/sendMessage', 'MessagesSender@sendMessage');
+  $router->get('/user/{access_token}/sendMessage', array('middleware' => 'htmlpurifier', 'uses' => 'MessagesSender@sendMessage'));
   $router->get('/createBot', 'checksTokenForBot@createBot');
   $router->get('/user/{access_token}/getChats', 'MessagesSender@getChats');
   $router->get('/user/{access_token}/getChat', 'MessagesSender@getChat');
   $router->get('/user/{access_token}/createChat', 'MessagesSender@createChat');
 
   $router->post('/user/{access_token}/getMe', 'checkedUser@checkedUserInAccessToken');
-  $router->post('/user/{access_token}/sendMessage', 'MessagesSender@sendMessage');
-  $router->post('/createBot', 'checksTokenForBot@createBot');
+  $router->post('/user/{access_token}/sendMessage', array('middleware' => 'htmlpurifier', 'uses' => 'MessagesSender@sendMessage'));  $router->post('/createBot', 'checksTokenForBot@createBot');
   $router->post('/user/{access_token}/getChats', 'MessagesSender@getChats');
   $router->post('/user/{access_token}/getChat', 'MessagesSender@getChat');
   $router->post('/user/{access_token}/createChat', 'MessagesSender@createChat');

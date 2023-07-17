@@ -103,12 +103,14 @@
   |
   */
   
-  // $app->middleware([
-  //     App\Http\Middleware\ExampleMiddleware::class
-  // ]);
+  $app->middleware([
+       App\Http\Middleware\ExampleMiddleware::class,
+       App\Http\Middleware\HtmlPurifierMiddleware::class,
+  ]);
   
   $app->routeMiddleware([
       'auth' => App\Http\Middleware\Authenticate::class,
+      'htmlpurifier' => App\Http\Middleware\HtmlPurifierMiddleware::class,
  ]);
  // $app->loadMigrationsFrom(__DIR__.'/../database/migrations');
   /*

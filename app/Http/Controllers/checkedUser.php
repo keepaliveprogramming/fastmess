@@ -58,7 +58,9 @@
                 $db = $db_channel;
                 $db->type = 'channel';
             }else $db = null;
-            
+            if (isset($db->user_id)) {
+                $db->ava = $this->getAvatar($db->user_id)->getData()->description;
+            }
             if ($db == null) {
                 return callback_return(false, 404, 'User not found');
             }else {
@@ -67,7 +69,7 @@
             }
         }
         public function getAvatar($user_id = '') {
-            $ava = DB::table('ava_users')->select('image_url', 'id_ava', 'user_id', 'is_home', 'dt_add')->where('user_id', $user_id)->get();
+            $ava = DB::table('ava_users')->select('image_url', 'id_ava', 'user_id', 'is_home', 'dt_add')->where('user_id', $user_id)->first();
             return callback_return(true, 200, $ava);
         }
         /**
