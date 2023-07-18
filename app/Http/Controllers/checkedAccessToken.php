@@ -19,6 +19,7 @@
             $atoken = DB::table('authorize_device')->select('user_id', 'dt_last_login')->where('access_token', $access_token)->first();
             if ($atoken) {
                 //$atoken->rand = Str::random(128);
+                $update_last_active = DB::table('users')->where('user_id', $atoken->user_id)->update(array('dt_last_active' => time()));
                 return callback_return(true, 200, $atoken);
             } else {
                 // Unauthorized
