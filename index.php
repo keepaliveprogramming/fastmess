@@ -1,6 +1,6 @@
 <?php
     header("Access-Control-Allow-Origin: *");
     /**
-     * v4.2.6.2
+     * v4.3
      */
     require __DIR__.'/public/index.php';

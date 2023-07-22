@@ -34,7 +34,7 @@
             $db_user = DB::table('users')->select('user_name', 'user_lastname', 'user_id', 'alias', 'is_bot' , 'is_real_bot', 'is_support', 'dt_last_active')
                 ->where('user_id', $id)->first();
             if (!$db_user) {
-                $db_channel = DB::table('channels')->select('name_channels', 'id_channels', 'alias', 'is_real')
+                $db_channel = DB::table('channels')->select('name_channels', 'id_channels', 'alias', 'is_real', 'is_private')
                 ->where('id_channels', $id)->first();
                 if (!$db_channel) {
                 $db_group = DB::table('groups')->select('name_group', 'id_group', 'alias')
@@ -75,7 +75,7 @@
         /**
          * Weryfikacja użytkownika czy isnieje czy nie.
          */
-        static  public function checkedUser($user_id = '', $email = '', $is_access_token = false) {
+        public function checkedUser($user_id = '', $email = '', $is_access_token = false) {
             //$res = array();
             if ($email && !$user_id) {
                 $user_id = $email;
@@ -94,7 +94,10 @@
                 $res['ok'] = true;
                 $res['error_code'] = 200;
                 $res['description'] = $user_ids;
-                // $res['ava'] = $this->getAvatar($user_ids['user_id']);
+                $check_ava = $this->getAvatar($user_ids->user_id)->getData();
+                if ($check_ava->ok) {
+                    $res['description']->ava = $check_ava->description;
+                }
             } else {
                 $res['ok'] = false;
                 $res['error_code'] = 404;

@@ -7,6 +7,9 @@
     use Illuminate\Http\Response;
     use App\Http\Controllers\checkedAccessToken;
     use Illuminate\Contracts\Encryption\Encrypter;
+
+    use App\Http\Controllers\ParserDomUrl;
+
     class MessagesSender extends Controller
     {
         protected $chat_id;
@@ -51,6 +54,7 @@
             foreach($chats as $chat) {
                 $my[] = array(
                     "text" => $encrypter->decrypt($chat->content),
+                    "preview_link_data" => json_decode($chat->preview_link_data, true),
                     "user" => $checkedUser->checkUserInChat($chat->user_id)->getData()->description,
                     "user_id" => $chat->user_id,
                     "dt_send" => $chat->dt_send,
@@ -101,6 +105,7 @@
             
             return $return;
         }
+        
         public function createChat(Request $request, checkedAccessToken $checkedAccessToken, checkedUser $checkedUser) {
             $check_token = $checkedAccessToken->index($request['access_token'])->getData();
             $user_id = $check_token->description->user_id;
@@ -115,6 +120,7 @@
                 if ($check->ok) {
                     return callback_return(false, 200, 'Chat exits');
                 }else {
+                    // checkedLinkForChannelOrGroup
                     $check_type = $checkedUser->checkUserInChat($chat_id)->getData();
                     //echo callback_return(false, 0, $check_type);
                     if (!$check_type->ok) {
@@ -125,6 +131,10 @@
                         }else if ($check_type->description->type == 'group') {
                             return callback_return(true, 200, $this->addedRecordChat($user_id, $chat_id, $intive_link));
                         }else if ($check_type->description->type == 'channel') {
+                            /*
+                                $checkedLinkForChannelOrGroup = $this->checkedLinkForChannelOrGroup($intive_link)->getData();
+                                if ($check->description->is_private) { }
+                            */
                             return callback_return(true, 200, $this->addedRecordChat($user_id, $chat_id, $intive_link));
                         }else {
                             return callback_return(false, 404, 'User not found');
@@ -186,7 +196,7 @@
             $count = DB::table('messages_chats')->where('chat_id', $chat_id)->count();
             return $count;
         }
-        public function sendMessage($access_token, Request $request, checkedAccessToken $checkedAccessToken, Encrypter $Encrypter) {
+        public function sendMessage($access_token, Request $request, checkedAccessToken $checkedAccessToken, Encrypter $Encrypter, ParserDomUrl $ParseDomUrl) {
             $id_mess = array();
             
             $check = $checkedAccessToken->index($access_token)->getData();
@@ -195,6 +205,14 @@
 
             $user_id = $check->description->user_id;
             $chat_id = $request['chat_id'];
+
+            $disable_web_page_preview = $request['disable_web_page_preview'];
+
+            $urlRegex = '/(?<!href=")(?:(?:(?:https?:\/\/)?(?:www\.)?)?(?:(?:t\.me\/s\/\w+|t\.me\/\w+)|(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/\S*)?))/i';
+
+            # $preview_link_data = $request['preview_link_data'];
+
+
             $com_chat_id = $chat_id != $user_id ? $chat_id : $user_id;
             if (!$check->ok) {
                 return callback_return($check->ok, $check->error_code, $check->description);
@@ -205,9 +223,18 @@
             }else if (!$request['text']) {
                 return callback_return(false, 400, 'Missing required parametr text');
             }else {
+
                 $text = $request['text'];
                 $id_mess = $this->id_message($check_chat->description->chat_id) + 1;
                 $text_crypt = $Encrypter->encrypt($text);
+
+
+                if (!$disable_web_page_preview) {
+                    if (preg_match($urlRegex, $text, $matches)) {
+                        $preview_link_data = $ParseDomUrl->parseLinkPreview($matches[0])->getData()->description;
+                    }else $preview_link_data = NULL;
+                }
+
                 
                 $insertData = array(
                     "id_mess" => NULL,
@@ -219,6 +246,7 @@
                     "is_edit" => 0,
                     "dt_add" => time(),
                     "dt_send" => time(),
+                    "preview_link_data" => json_encode($preview_link_data),
                     "parse_mode" => $parse_mode
                 );
                 $insert_db = DB::table('messages_chats')->insert($insertData);
@@ -227,7 +255,8 @@
                     "dt_add" => $insertData['dt_add'],
                     "id_message" => $id_mess,
                     "user_id" => $user_id,
-                    "parse_mode" => $parse_mode
+                    "parse_mode" => $parse_mode,
+                    "link_preview" => json_encode($preview_link_data)
                 ));
             }
         }

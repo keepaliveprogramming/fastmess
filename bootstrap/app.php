@@ -144,6 +144,9 @@
   | can respond to, as well as the controllers that may handle them.
   |
   */
+
+  $app->debug = true;
+
   $app->register(\Illuminate\Mail\MailServiceProvider::class);
 
 
@@ -158,6 +161,7 @@
   $app->router->group(['namespace' => 'App\Http\Controllers', ], function ($router) {
     require __DIR__.'/../routes/web.php';
   });
+  
   
 
   return $app;

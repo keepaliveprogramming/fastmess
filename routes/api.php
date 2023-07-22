@@ -17,6 +17,8 @@
   use League\CommonMark\Environment;
   use App\Http\Controllers\User;
 
+  use App\Http\Controllers\ParserDomUrl;
+
   $router->get('/', function () {
     return callback_return(false, 404, "Not found");
   });
@@ -113,3 +115,11 @@
    */
   $router->get('/bot{user_id}:{token}/getMe', 'Bot@getMe');
   $router->post('/bot{user_id}:{token}/getMe', 'Bot@getMe');
+
+  /**
+   * Preview link — test
+   */
+
+   $router->get('/preview', function(Request $request, ParserDomUrl $ParserDomUrl) {
+    return $ParserDomUrl->parseLinkPreview($request['url']);
+   });

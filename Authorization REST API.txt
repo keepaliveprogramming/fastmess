@@ -1,0 +1,91 @@
+GET: /users/{user_id}
+
+Response:
+{
+    "ok": true|false,
+    "error_code": 200,
+    "description": {
+        user_name: string,
+        user_lastname: string,
+        use_id: int,
+        alias: string,
+        descr: string,
+    }
+}
+
+GET,POST: /users?search=%search%
+
+Body: 
+{
+    search: string
+}
+
+Response: 
+{
+    "ok": true|false,
+    "error_code": 200,
+    "description": [
+        user_name: string,
+        user_lastname: string,
+        use_id: int,
+        alias: string,
+        descr: string,
+        ava: {
+            image_url: string,
+            id_ava: int,
+            is_home: int,
+            dt_add: int
+        }
+    ] 
+}
+
+GET,POST: /token
+
+Body: 
+{
+    access_token: string
+}
+
+200: OK
+401: Unauthorized
+400: Missing required parametr access_token
+
+Response
+{
+    "ok": true|false,
+    "error_code": 200,401,400,
+    "description": {
+        user_id: int,
+        dt_last_login: int
+    }
+}
+
+GET,POST: /authorization
+
+Body: 
+{
+    email: string
+}
+
+Response: 
+{
+    ok: true|false,
+    error_code: 200,403,404,
+    description: {
+        message: string,
+        request_token: string
+    } 
+}
+And send message to mail code.
+
+GET,POST: /checkCode
+Body: 
+{
+    code: int,
+    request_token: string
+}
+
+Response: 
+{
+    
+}
