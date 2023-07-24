@@ -81,6 +81,24 @@
   $router->post('/checkCode', 'checkedUser@checkedCode');
   $router->get('/checkCode', 'checkedUser@checkedCode');
 
+  /**
+   * Rejestracja użytkownika po email, imieniu.
+   * Dane wejściowe: email type string, user_name type string.
+   * Zwraca: true | false.
+   * Method: GET,POST.
+   */
+  $router->post('/registrationUser', 'checkedUser@registrationUser');
+  $router->get('/registrationUser', 'checkedUser@registrationUser');
+
+  /**
+   * Uwazać na /newtoken/{user_id}.
+   * Poniewaz ta funkcja nadaje dla uzytkownika access_token oraz refresh_token który,
+   * może wykorzystać w 
+   * Np: /user/{access_token}/getMe,
+   * Bądź wysyłać wiadomość do użytkownika jakiegoś itp ogołem lepiej nie odkomentowywać tę funckje ewentualnie kiedy jest potrzebny token
+   * ALE! Na localhost.
+   * Więc UWAŻAJ!!!
+   */
 
   $router->get('/newtoken/{user_id}', 'checkedAccessToken@createAccessToken');
   
@@ -116,6 +134,9 @@
   $router->get('/bot{user_id}:{token}/getMe', 'Bot@getMe');
   $router->post('/bot{user_id}:{token}/getMe', 'Bot@getMe');
 
+  
+  $router->get('/bot{user_id}:{token}/sendMessage', 'Bot@sendMessages');
+
   /**
    * Preview link — test
    */
@@ -123,3 +144,29 @@
    $router->get('/preview', function(Request $request, ParserDomUrl $ParserDomUrl) {
     return $ParserDomUrl->parseLinkPreview($request['url']);
    });
+
+   
+   // Tworzymy trasę w Lumen, która będzie przyjmować obraz
+    $router->post('/upload', function (Request $request) use ($router) {
+        $destinationUrl = 'https://usercontent.pl/supload.php';
+
+        // Pobieramy ścieżkę do załadowanego pliku tymczasowego na serwerze Lumen
+        $tmpImagePath = $request->file('photo')->getPathname();
+
+        // Tworzymy klienta Guzzle
+        $client = new Client();
+
+        // Wysyłamy obraz za pomocą klienta Guzzle jako plik w formularzu
+        $response = $client->post($destinationUrl, [
+            'multipart' => [
+                [
+                    'name' => 'photo', // Nazwa pola formularza na serwerze docelowym
+                    'contents' => fopen($tmpImagePath, 'r'), // Otwieramy plik jako strumień danych
+                    'filename' => $request->file('photo')->getClientOriginalName(), // Oryginalna nazwa pliku
+                ],
+            ],
+        ]);
+
+        // Odpowiedź z serwera docelowego jest zazwyczaj JSON-em, możesz ją przetworzyć lub zwrócić ją jako odpowiedź w Lumen
+        return $response->getBody();
+    });

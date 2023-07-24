@@ -57,4 +57,14 @@
             }
         }
 
+        public function revokeAccessToken($access_token) {
+            $access_token = strtoupper(sha1($access_token));
+            $del = DB::delete("DELETE FROM authorize_device WHERE access_token = ?", array($access_token));
+            if (!$del) {
+                return callback_return(false, 500, 'Not revoked access_token');
+            }else {
+                return callback_return(true, 200, 'Revoked access_token');
+            }
+        }
+
     }

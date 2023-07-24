@@ -6,6 +6,10 @@
   class User extends Controller
   {
     public function getUsers(Request $request, checkedUser $checkedUser) {
+      /**
+       * Wyszukowanie użytkownika według imienia,nazwiska,alisa.
+       * User search in user_name,user_lastname,aliases.
+       */
       if (!$request['search']) {
         return callback_return(false, 400, 'Missing required parameter search');
       }else {
@@ -38,6 +42,10 @@
       }
     }
     public function getUser($user_id, checkedUser $checkedUser) {
+      /**
+       * Wyszukiwanie użytkownika według user_id,alias.
+       * User search in user_id or alias.
+       */
       $user = array();
       
       $user = DB::table('users')->select('user_name', 'user_lastname', 'user_id', 'alias', 'descr')->where('user_id', $user_id)->orWhere('alias', $user_id)->first();

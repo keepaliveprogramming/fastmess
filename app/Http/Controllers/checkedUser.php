@@ -16,6 +16,9 @@
         protected $subject_mail;
 
         public function checkedUserInAccessToken($access_token, Request $request, checkedAccessToken $checkedAccessToken) {
+            /**
+             * Sprawdzenie czy token isnieje.
+             */
             if (!$access_token) {
                 return callback_return(false, 400, "Missing required parameter access_token");
               }else {
@@ -30,20 +33,24 @@
             }
         }
         public function checkUserInChat($id) {
+            /**
+             * Sprawzenie czy użytkownik lub kanał, bądź grupa isnieje. Po id.
+             * Check if a user, channel or group exists, in ID.
+             */
             $db = array();
             $db_user = DB::table('users')->select('user_name', 'user_lastname', 'user_id', 'alias', 'is_bot' , 'is_real_bot', 'is_support', 'dt_last_active')
                 ->where('user_id', $id)->first();
-            if (!$db_user) {
-                $db_channel = DB::table('channels')->select('name_channels', 'id_channels', 'alias', 'is_real', 'is_private')
-                ->where('id_channels', $id)->first();
-                if (!$db_channel) {
-                $db_group = DB::table('groups')->select('name_group', 'id_group', 'alias')
-                    ->where('id_group', $id)->first();
-                if (!$db_group) {
-                    $db = null;
+                if (!$db_user) {
+                    $db_channel = DB::table('channels')->select('name_channels', 'id_channels', 'alias', 'is_real', 'is_private')
+                        ->where('id_channels', $id)->first();
+                    if (!$db_channel) {
+                        $db_group = DB::table('groups')->select('name_group', 'id_group', 'alias')
+                            ->where('id_group', $id)->first();
+                        if (!$db_group) {
+                            $db = null;
+                        }
+                    }
                 }
-                }
-            }
             if (isset($db_user)){
                 $db = $db_user;
                 $db->type = 'user';
@@ -69,13 +76,17 @@
             }
         }
         public function getAvatar($user_id = '') {
+            /**
+             * Wyszukiwanie avataru/zdjęcia profilowego dla użytkownika.
+             */
             $ava = DB::table('ava_users')->select('image_url', 'id_ava', 'user_id', 'is_home', 'dt_add')->where('user_id', $user_id)->first();
             return callback_return(true, 200, $ava);
         }
-        /**
-         * Weryfikacja użytkownika czy isnieje czy nie.
-         */
+        
         public function checkedUser($user_id = '', $email = '', $is_access_token = false) {
+            /**
+             * Sprawdzenie czy użytkownik isnieje bądź nie.
+             */
             //$res = array();
             if ($email && !$user_id) {
                 $user_id = $email;
@@ -105,10 +116,11 @@
             }
             return callback_return($res['ok'], $res['error_code'], $res['description']);
         }
-        /**
-         * Wysyłanie E-mail.
-         */
+        
         function mailSend() {
+            /**
+             * Wysyłanie E-mail.
+             */
             ini_set('SMTP', 's1.ct8.pl');
             ini_set('smtp_port', 25);
             ini_set('sendmail_from', 'mail@fastmess.ct8.pl');
@@ -127,10 +139,11 @@
             return $mailSent;
         }
         
-        /**
-         * Weryfikacja kodu jednorazowego logowania dla x użytkownika.
-         */
+        
         protected function checkedCodeUser($code, $request_token) {
+            /**
+             * Weryfikacja kodu jednorazowego logowania dla x użytkownika.
+             */
             $code_normal = $code;
             $code = strtoupper(md5(sha1($code)));
             $check = DB::table('code_auth')->select('ip', 'request_token', 'user_id')->where('code', $code)->first();
@@ -146,10 +159,11 @@
                 return $checkedAccessToken->createAccessToken($check->user_id);
             }
         }
-        /**
-         * Generowanie kodu dla użytkownika a potem wysyłając go na pocztę.
-         */
+        
         protected function generateCodeForUser($user_id) {
+            /**
+             * Generowanie kodu dla użytkownika a potem wysyłając go na pocztę.
+             */
             $requests = new Request();
             $code_generate = rand(100000, 1000000);
             $md5_sha1_upper_code = strtoupper(md5(sha1($code_generate)));
@@ -179,11 +193,12 @@
         }
         // checkedAccessToken z checkedAccessToken.php
 
-        /**
-         * Logowanie za pomocą email użytkownika, i sprawdzenie czy nie jest botem. 
-         * Jak będzie botem wyświetli komunikat.
-         */
+        
         public function creatingLoginForUser($email) {
+            /**
+             * Logowanie za pomocą email użytkownika, i sprawdzenie czy nie jest botem. 
+             * Jak będzie botem wyświetli komunikat.
+             */
             $checkEmail = $this->checkedUser('', $email)->getData();
             if (!$email) {
                 return callback_return(false,  404, "Missing required parameter email");
@@ -203,10 +218,12 @@
                 }
             }
         }
-        /**
-         * Sprawdzenie kodu weryfikacyjnego który został wysłany do użytkownika.
-         */
+        
         public function checkedCode(Request $request) {
+            /**
+             * Sprawdzenie kodu weryfikacyjnego, czy jest poprawny czy nie. 
+             * Który został wysłany do użytkownika.
+             */
             $code_normal = $request['code'];
             $request_token = $request['request_token'];
             if (!$code_normal) {
@@ -218,14 +235,24 @@
             }
             
         }
-        /**
-         * Rejestracja użytkownika po email i imieniu.
-         */
+        public function validateEmail($email) {
+            // Weryfikacja e-mail czy nie jest problemowy.
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
         public function registrationUser(Request $request, Str $Str) {
+            /**
+             * Rejestracja użytkownika po email i imieniu.
+             */
             $email = $request['email'];
             $user_name = $request['user_name'];
             if (!$email) {
                 return callback_return(false, 400, 'Missing required parametr email');
+            }else if (!$this->validateEmail($email)) {
+                return callback_return(false, 400, 'Email is not correct');
             }else if (!$user_name) {
                 return callback_return(false, 400, 'Missing required parametr user_name');
             }else {
@@ -234,7 +261,13 @@
                     "user_name" => $user_name,
                     "email" => $email,
                     "dt_registr" => time(),
-                    "token" => Str::random(32)
+                    "token" => Str::random(32),
+                    "dt_last_active" => '',
+                    "is_user" => 1,
+                    "is_support" => 0,
+                    "is_real_bot" => 0,
+                    "is_bot" => 0,
+                    "is_father" => 0,
                 );
                 $insert_db = DB::table('users')->insert($insertData);
                 if ($insert_db) {
