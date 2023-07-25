@@ -13,6 +13,11 @@
     use Illuminate\Contracts\Encryption\Encrypter;
     use App\Http\Controllers\ParserDomUrl;
 
+    use GuzzleHttp\Client;
+    use GuzzleHttp\Exception\RequestException;
+
+
+
 
     class Bot extends Controller
     {
@@ -83,8 +88,28 @@
                 }
             }
         }
-
-        public function sendMessages($user_id, $token, checkedAccessToken $checkedAccessToken) {
+        public function createRequestCurlBot($url = '', $data = array()) {
+            $client = new Client();
+            try {
+                // Wykonujemy zapytanie HTTP typu POST na serwer Lumen
+                $response = $client->get($url, [
+                    'form_params' => $data, // Wysyłamy dane w formacie x-www-form-urlencoded
+                ]);
+                
+                // Odczytujemy odpowiedź z serwera Lumen
+                return $response->getBody();
+            }catch (RequestException $e) {
+                // W przypadku błędu, wyświetlamy treść odpowiedzi z serwera (jeśli jest dostępna)
+                if ($e->hasResponse()) {
+                    $res = $e->getResponse()->getBody();
+                    return $res;
+                } else {
+                    // Jeśli odpowiedź serwera jest niedostępna, możemy wyświetlić dowolny komunikat błędu
+                    return callback_return(false, 500, 'Unknown error');
+                }
+            }
+        }
+        public function sendMessages($user_id, $token, checkedAccessToken $checkedAccessToken, Request $request) {
             // checkedAccessToken@createAccessToken
             $checked_bot = $this->index($user_id, $token)->getData();
             if (!$checked_bot->ok) {
@@ -96,7 +121,23 @@
                     $messagesSender = new MessagesSender();
                     $access_tokens = $generate_access_token->description->access_token;
                     // $sendMessage_ = $messagesSender->sendMessage($access_tokens)->getData();
-                    return callback_return(false, 500, 'Function not available at the moment');
+                    //$path = ?chat_id={$request->chat_id}&text={$request->text}&parse_mode={$request->parse_mode}";
+                    $build_query = http_build_query(array(
+                        "chat_id" => $request->chat_id,
+                        "text" => $request->text,
+                        "parse_mode" => $request->parse_mode,
+                        "disable_web_page_preview" => $request->disable_web_page_preview
+                    ));
+                    if ($_SERVER['HTTP_HOST'] != 'localhost') {
+                        $path_u = '';
+                    }else {
+                        $path_u = '/GITHUB/fastmess';
+                    }
+                    $send_m = json_decode($this->createRequestCurlBot(
+                        'http://'.$_SERVER['HTTP_HOST'].$path_u.'/user/'.$access_tokens.'/sendMessage?'.$build_query, 
+                    ), true);
+
+                    return callback_return($send_m['ok'], $send_m['error_code'], $send_m['description']);
                     $checkedAccessToken->revokeAccessToken($access_tokens);
                 }else {
                     return callback_return(false, 500, 'Invalid access_token');

@@ -18,6 +18,7 @@
   use App\Http\Controllers\User;
 
   use App\Http\Controllers\ParserDomUrl;
+  use App\Http\Controllers\Upload;
 
   $router->get('/', function () {
     return callback_return(false, 404, "Not found");
@@ -147,26 +148,4 @@
 
    
    // Tworzymy trasę w Lumen, która będzie przyjmować obraz
-    $router->post('/upload', function (Request $request) use ($router) {
-        $destinationUrl = 'https://usercontent.pl/supload.php';
-
-        // Pobieramy ścieżkę do załadowanego pliku tymczasowego na serwerze Lumen
-        $tmpImagePath = $request->file('photo')->getPathname();
-
-        // Tworzymy klienta Guzzle
-        $client = new Client();
-
-        // Wysyłamy obraz za pomocą klienta Guzzle jako plik w formularzu
-        $response = $client->post($destinationUrl, [
-            'multipart' => [
-                [
-                    'name' => 'photo', // Nazwa pola formularza na serwerze docelowym
-                    'contents' => fopen($tmpImagePath, 'r'), // Otwieramy plik jako strumień danych
-                    'filename' => $request->file('photo')->getClientOriginalName(), // Oryginalna nazwa pliku
-                ],
-            ],
-        ]);
-
-        // Odpowiedź z serwera docelowego jest zazwyczaj JSON-em, możesz ją przetworzyć lub zwrócić ją jako odpowiedź w Lumen
-        return $response->getBody();
-    });
+    $router->get('/upload', 'Upload@uploaderForUrl');

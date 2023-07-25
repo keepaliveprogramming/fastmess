@@ -33,7 +33,7 @@
         # echo $url;
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'FastmessBot 1.0');
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Image FastmessBot 1.0');
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         $response = curl_exec($ch);
         $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);

@@ -26,3 +26,5 @@
    * W api.php są konfiguracje.
    */
   include_once __DIR__.'/api.php';
+
+  

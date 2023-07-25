@@ -210,12 +210,12 @@
       
       $check = $checkedAccessToken->index($access_token)->getData();
       $check_chat = $this->chechedChatId($request['chat_id'], $check->description->user_id)->getData();
-      $parse_mode = !$request['parse_mode'] ? 'Markdown' : ($request['parse_mode'] == 'HTML' ? $request['parse_mode'] : ($request['parse_mode'] == 'JSON' ? $request['parse_mode'] : 'Markdown'));
+      $parse_mode = !$request['parse_mode'] ? 'Markdown' : ($request['parse_mode'] == 'HTML' || $request['parse_mode'] == 'html' ? $request['parse_mode'] : ($request['parse_mode'] == 'JSON' || $request['parse_mode'] == 'json' ? $request['parse_mode'] : 'Markdown'));
       
       $user_id = $check->description->user_id;
       $chat_id = $request['chat_id'];
       
-      $disable_web_page_preview = $request['disable_web_page_preview'] ? $request['disable_web_page_preview'] : true;
+      $disable_web_page_preview = boolval($request['disable_web_page_preview']);
       
       $urlRegex = '/(?<!href=")(?:(?:(?:https?:\/\/)?(?:www\.)?)?(?:(?:t\.me\/s\/\w+|t\.me\/\w+)|(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/\S*)?))/i';
       
@@ -238,11 +238,14 @@
         $text_crypt = $Encrypter->encrypt($text);
         
         
-        if ($disable_web_page_preview) {
+        if ($disable_web_page_preview == true) {
+          $preview_link_data = null; 
+        }else { 
           if (preg_match($urlRegex, $text, $matches)) {
-            $preview_link_data = $ParseDomUrl->parseLinkPreview($matches[0])->getData()->description;
-          }else $preview_link_data = NULL;
-        }else $preview_link_data = NULL;
+            $preview_link_data = json_encode($ParseDomUrl->parseLinkPreview($matches[0])->getData()->description);
+          }else { $preview_link_data = null; }
+          
+        }
         
         
         $insertData = array(
@@ -255,7 +258,7 @@
           "is_edit" => 0,
           "dt_add" => time(),
           "dt_send" => time(),
-          "preview_link_data" => json_encode($preview_link_data),
+          "preview_link_data" => ($preview_link_data),
           "parse_mode" => $parse_mode
         );
         $insert_db = DB::table('messages_chats')->insert($insertData);
@@ -265,7 +268,7 @@
           "id_message" => $id_mess,
           "user_id" => $user_id,
           "parse_mode" => $parse_mode,
-          "link_preview" => ($preview_link_data)
+          "link_preview" => json_decode($preview_link_data, true)
         ));
       }
     }

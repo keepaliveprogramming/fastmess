@@ -108,10 +108,14 @@
        App\Http\Middleware\HtmlPurifierMiddleware::class,
   ]);
   
+
+  
+
   $app->routeMiddleware([
       'auth' => App\Http\Middleware\Authenticate::class,
       'htmlpurifier' => App\Http\Middleware\HtmlPurifierMiddleware::class,
- ]);
+  ]);
+  
  // $app->loadMigrationsFrom(__DIR__.'/../database/migrations');
   /*
   |--------------------------------------------------------------------------
