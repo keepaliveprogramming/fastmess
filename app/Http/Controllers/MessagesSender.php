@@ -247,7 +247,6 @@
           
         }
         
-        
         $insertData = array(
           "id_mess" => NULL,
           "id_messages" => $id_mess,
