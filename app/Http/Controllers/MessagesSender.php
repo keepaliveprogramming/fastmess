@@ -200,6 +200,67 @@
       $count = DB::table('messages_chats')->where('chat_id', $chat_id)->count();
       return $count;
     }
+
+    public function editTextMessage($access_token, Request $request, Encrypter $encrypter, checkedUser $checkedUser, checkedAccessToken $checkedAccessToken) {
+      $chat_id = $request->chat_id;
+      $message_id = $request->message_id;
+      $check_token = $checkedAccessToken->index($access_token)->getData();
+      $text = $request->text;
+      
+      if (!$chat_id) {
+        return callback_return(false, 400, 'Missing required parametr chat_id');
+      }else if (!$check_token->ok) {
+        return callback_return($check_token->ok, $check_token->error_code, $check_token->description);
+      }else {
+        $get_chat_id = $this->chechedChatId($chat_id, $check_token->description->user_id)->getData();
+        $chat = DB::table('messages_chats')->select()->where('chat_id', $get_chat_id->description->chat_id)->where('id_messages', $message_id)->orderBy('id_messages', 'asc')->first();
+        
+        if (!$chat) {
+          return callback_return(false, 404, 'Message not found');
+        }else if (!$message_id) {
+          return callback_return(false, 404, 'Missing required parametr message_id');
+        }else if ($check_token->description->user_id !== $chat->user_id) {
+          return callback_return(false, 403, 'You do not have permission to edit this message');
+        }else {
+          if (!$text) {
+            return callback_return(false, 400, 'Missing required parametr text');
+          }else {
+            return callback_return(true, 200, array(
+              "status" => "Poczekaj..."
+            ));
+          }
+          
+        }
+      }
+    }
+
+    public function deleteMessage($access_token, Request $request, Encrypter $encrypter, checkedUser $checkedUser, checkedAccessToken $checkedAccessToken) {
+      $chat_id = $request->chat_id;
+      $message_id = $request->message_id;
+      $check_token = $checkedAccessToken->index($access_token)->getData();
+      
+      if (!$chat_id) {
+        return callback_return(false, 400, 'Missing required parametr chat_id');
+      }else if (!$check_token->ok) {
+        return callback_return($check_token->ok, $check_token->error_code, $check_token->description);
+      }else {
+        $get_chat_id = $this->chechedChatId($chat_id, $check_token->description->user_id)->getData();
+        $chat = DB::table('messages_chats')->select()->where('chat_id', $get_chat_id->description->chat_id)->where('id_messages', $message_id)->orderBy('id_messages', 'asc')->first();
+        
+        if (!$chat) {
+          return callback_return(false, 404, 'Message not found');
+        }else if (!$message_id) {
+          return callback_return(false, 404, 'Missing required parametr message_id');
+        }else if ($check_token->description->user_id !== $chat->user_id) {
+          return callback_return(false, 403, 'You do not have permission to edit this message');
+        }else {
+          $del = DB::delete("DELETE FROM messages_chats WHERE chat_id = ? AND id_messages = ?", array($get_chat_id->description->chat_id, $message_id));
+          if (!$del) {
+            return callback_return(false, 500, 'Can\'t delete message');
+          }else return callback_return(true, 200, 'Message deleted');
+        }
+      }
+    }
     
     public function sendMessage($access_token, Request $request, Encrypter $Encrypter) {//, Request $request, checkedAccessToken $checkedAccessToken, Encrypter $Encrypter, ParserDomUrl $ParseDomUrl) {
       //$request = new Request();
@@ -210,8 +271,19 @@
       
       $check = $checkedAccessToken->index($access_token)->getData();
       $check_chat = $this->chechedChatId($request['chat_id'], $check->description->user_id)->getData();
-      $parse_mode = !$request['parse_mode'] ? 'Markdown' : ($request['parse_mode'] == 'HTML' || $request['parse_mode'] == 'html' ? $request['parse_mode'] : ($request['parse_mode'] == 'JSON' || $request['parse_mode'] == 'json' ? $request['parse_mode'] : 'Markdown'));
+      $parse_mode = $request['parse_mode'];
+      $text = $request['text'];
       
+      if (!$parse_mode || $parse_mode == 'Markdown' || $parse_mode == 'markdown') {
+        $parse_mode = 'Markdown';
+        //$text = $text ? markdown($text) : $text;
+      }else if ($parse_mode == 'html' || $parse_mode == 'HTML') {
+        $parse_mode = 'HTML';
+      }else {
+        $parse_mode = 'Markdown';
+        //$text = $text ? markdown($text) : $text;
+      }
+
       $user_id = $check->description->user_id;
       $chat_id = $request['chat_id'];
       
@@ -232,12 +304,8 @@
       }else if (!$request['text']) {
         return callback_return(false, 400, 'Missing required parametr text');
       }else {
-        
-        $text = $request['text'];
         $id_mess = $this->id_message($check_chat->description->chat_id) + 1;
         $text_crypt = $Encrypter->encrypt($text);
-        
-        
         if ($disable_web_page_preview == true) {
           $preview_link_data = null; 
         }else { 
