@@ -16,8 +16,7 @@
     use GuzzleHttp\Client;
     use GuzzleHttp\Exception\RequestException;
 
-
-
+use function PHPUnit\Framework\callback;
 
     class Bot extends Controller
     {
@@ -58,11 +57,15 @@
                     $check_bot->update(array(
                         'token' => $token
                     ));
+                    return callback_return(true, 200, array(
+                        "token" => $user_id.':'.$token,
+                    ));
                 }else {
                     $dataCreateBot = array(
                         "id_token" => NULL,
                         "user_id" => $user_id,
-                        "token" => $token
+                        "token" => $token,
+                        "dt_add" => time()
                     );
                     DB::table('bots_token')->insert($dataCreateBot);
                     
@@ -78,14 +81,18 @@
             }else {
                 $user_atoken = new checkedAccessToken();
                 $user_id = $user_atoken->index($request['access_token'])->getData();
-
-                $checkedUser = new checkedUser();
-                $check_u = $checkedUser->checkedUser($user_id->description->user_id)->getData();
-                if (!$check_u->description->is_bot) {
-                    return callback_return(false, 403, 'You are not a bot');
+                if (!$user_id->ok) {
+                    return callback_return(false, 404, 'Bot not found');
                 }else {
-                    return $this->createBotForDB($user_id);
+                    $checkedUser = new checkedUser();
+                    $check_u = $checkedUser->checkedUser($user_id->description->user_id)->getData();
+                    if (!$check_u->description->is_bot) {
+                        return callback_return(false, 403, 'You are not a bot');
+                    }else {
+                        return $this->createBotForDB($user_id->description->user_id);
+                    }
                 }
+                
             }
         }
         public function createRequestCurlBot($url = '', $data = array()) {
@@ -133,8 +140,9 @@
                     }else {
                         $path_u = '/GITHUB/fastmess';
                     }
+                    $scheme = $_SERVER['REQUEST_SCHEME'] == 'http' ? 'http' : 'https';
                     $send_m = json_decode($this->createRequestCurlBot(
-                        'http://'.$_SERVER['HTTP_HOST'].$path_u.'/user/'.$access_tokens.'/sendMessage?'.$build_query, 
+                        $scheme.'://'.$_SERVER['HTTP_HOST'].$path_u.'/user/'.$access_tokens.'/sendMessage?'.$build_query, 
                     ), true);
 
                     return callback_return($send_m['ok'], $send_m['error_code'], $send_m['description']);
