@@ -38,7 +38,7 @@
              * Check if a user, channel or group exists, in ID.
              */
             $db = array();
-            $db_user = DB::table('users')->select('user_name', 'user_lastname', 'user_id', 'alias', 'is_bot' , 'is_real_bot', 'is_support', 'dt_last_active')
+            $db_user = DB::table('users')->select('user_name', 'user_lastname', 'user_id', 'alias', 'is_bot' , 'is_real_bot', 'is_support', 'is_father', 'dt_last_active')
                 ->where('user_id', $id)->first();
                 if (!$db_user) {
                     $db_channel = DB::table('channels')->select('name_channels', 'id_channels', 'alias', 'is_real', 'is_private')
@@ -56,7 +56,7 @@
                 $db->type = 'user';
                 $db_user = $db_user;
                 if ($db_user->is_bot) {
-                $db->type = 'bot';
+                    $db->type = 'bot';
                 }
             }else if (isset($db_group)){
                 $db = $db_group;

@@ -16,6 +16,8 @@
     use GuzzleHttp\Client;
     use GuzzleHttp\Exception\RequestException;
 
+
+
 use function PHPUnit\Framework\callback;
 
     class Bot extends Controller
@@ -119,21 +121,25 @@ use function PHPUnit\Framework\callback;
         public function sendMessages($user_id, $token, checkedAccessToken $checkedAccessToken, Request $request) {
             // checkedAccessToken@createAccessToken
             $checked_bot = $this->index($user_id, $token)->getData();
+            $messagesSender = new MessagesSender();
             if (!$checked_bot->ok) {
                 return callback_return($checked_bot->ok, $checked_bot->error_code, $checked_bot->description);
             }else {
                 $generate_access_token = $checkedAccessToken->createAccessToken($checked_bot->description->user_id)->getData();
 
                 if ($generate_access_token->ok) {
-                    $messagesSender = new MessagesSender();
                     $access_tokens = $generate_access_token->description->access_token;
                     // $sendMessage_ = $messagesSender->sendMessage($access_tokens)->getData();
                     //$path = ?chat_id={$request->chat_id}&text={$request->text}&parse_mode={$request->parse_mode}";
+                    $chat_id = $request->chat_id;
+                    $text = $request->text;
+                    $parse_mode = $request->parse_mode;
+                    $disable_web_page_preview = $request->disable_web_page_preview;
                     $build_query = http_build_query(array(
-                        "chat_id" => $request->chat_id,
-                        "text" => $request->text,
-                        "parse_mode" => $request->parse_mode,
-                        "disable_web_page_preview" => $request->disable_web_page_preview
+                        "chat_id" => $chat_id,
+                        "text" => $text,
+                        "parse_mode" => $parse_mode,
+                        "disable_web_page_preview" => $disable_web_page_preview
                     ));
                     if ($_SERVER['HTTP_HOST'] != 'localhost') {
                         $path_u = '';
@@ -144,8 +150,29 @@ use function PHPUnit\Framework\callback;
                     $send_m = json_decode($this->createRequestCurlBot(
                         $scheme.'://'.$_SERVER['HTTP_HOST'].$path_u.'/user/'.$access_tokens.'/sendMessage?'.$build_query, 
                     ), true);
+                    
 
-                    return callback_return($send_m['ok'], $send_m['error_code'], $send_m['description']);
+                    $request = new Request(); // Przyjmuję, że tu masz odpowiedni obiekt Request
+                    $accessToken = new checkedAccessToken(); // Przyjmuję, że tu masz odpowiedni obiekt checkedAccessToken
+                    $user = new checkedUser(); // Przyjmuję, że tu masz odpowiedni obiekt checkedUser
+                    
+                    $request['access_token'] = $access_tokens;
+                    $request['chat_id'] = $chat_id;
+                    $request['text'] = $text;
+                    $request['parse_mode'] = $parse_mode;
+                    $request['disable_web_page_preview'] = $disable_web_page_preview;
+
+                    $createChat = $messagesSender->createChat($request, $accessToken, $user)->getData();
+                    // var_dump($createChat);
+                    if ($createChat->description == 'Chat exits') {
+                        return callback_return($send_m['ok'], $send_m['error_code'], $send_m['description']);
+                    }else if ($createChat->description == 'Chat create') {
+                        $newRequest = $this->sendMessages($user_id,$token, $accessToken, $request)->getData();
+                        return callback_return($newRequest->ok, $newRequest->error_code, $newRequest->description);
+                    }else {
+                        return callback_return($createChat->ok, $createChat->error_code, $createChat->description);
+                    }
+                    
                     $checkedAccessToken->revokeAccessToken($access_tokens);
                 }else {
                     return callback_return(false, 500, 'Invalid access_token');

@@ -120,12 +120,21 @@
         }else {
           // checkedLinkForChannelOrGroup
           $check_type = $checkedUser->checkUserInChat($chat_id)->getData();
+          $getInfoMainUserSender = $checkedUser->checkUserInChat($user_id)->getData();
           //echo callback_return(false, 0, $check_type);
           if (!$check_type->ok) {
             return callback_return(false, 404, 'User not found');
           }else {
             if ($check_type->description->type == 'user') {
               return callback_return(true, 200, $this->addedRecordChat($user_id, $chat_id));
+            }else if ($check_type->description->type == 'bot') {
+              if ($check_token->description->user_id == $chat_id) {
+                return callback_return(false, 400, 'The bot cannot write to itself');
+              }else if ($getInfoMainUserSender->description->is_support == 1 || $getInfoMainUserSender->description->is_father == 1) {
+                return callback_return(true, 200, $this->addedRecordChat($user_id, $chat_id));
+              }else {
+                return callback_return(false, 400, 'The bot cannot start a conversation with the user');
+              }
             }else if ($check_type->description->type == 'group') {
               return callback_return(true, 200, $this->addedRecordChat($user_id, $chat_id, $intive_link));
             }else if ($check_type->description->type == 'channel') {
@@ -286,7 +295,9 @@
 
       $user_id = $check->description->user_id;
       $chat_id = $request['chat_id'];
-      
+      $checkedUser = new checkedUser();
+      $from_user = $checkedUser->checkUserInChat($user_id)->getData()->description;
+
       $disable_web_page_preview = boolval($request['disable_web_page_preview']);
       
       $urlRegex = '/(?<!href=")(?:(?:(?:https?:\/\/)?(?:www\.)?)?(?:(?:t\.me\/s\/\w+|t\.me\/\w+)|(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/\S*)?))/i';
@@ -330,6 +341,7 @@
         );
         $insert_db = DB::table('messages_chats')->insert($insertData);
         return callback_return(true, 200, array(
+          "from" => $from_user,
           "text" => $text,
           "dt_add" => $insertData['dt_add'],
           "id_message" => $id_mess,
