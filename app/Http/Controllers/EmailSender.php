@@ -29,8 +29,8 @@
         protected function configureTransport()
         {
             $con = new Swift_SmtpTransport('s1.ct8.pl', 25);
-            $con->setUsername('mail@fastmess.ct8.pl');
-            $con->setPassword('B6~h5iiej.8fhkVOO0Ut>1zeXguO54');
+            $con->setUsername('[login]');
+            $con->setPassword('[haslo]');
             return $con;
         }
     }
