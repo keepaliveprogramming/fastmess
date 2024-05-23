@@ -123,16 +123,16 @@
              */
             ini_set('SMTP', 's1.ct8.pl');
             ini_set('smtp_port', 25);
-            ini_set('sendmail_from', 'mail@fastmess.ct8.pl');
+            ini_set('sendmail_from', '[mail]');
             ini_set('MAIL_ENCRYPTION', 'tls');
-            ini_set('auth_username', 'mail@fastmess.ct8.pl');
-            ini_set('auth_password', 'B6~h5iiej.8fhkVOO0Ut>1zeXguO54');
+            ini_set('auth_username', '[mail]');
+            ini_set('auth_password', '[haslo]');
             define('MAIL_APP_NAME', 'FastMess');
             $to = $this->email;
             $subject = $this->subject_mail;
             $message = $this->body_mail;
-            $headers = 'From: '.MAIL_APP_NAME.' <mail@fastmess.ct8.pl>' . "\r\n";
-            $headers .= 'Reply-To: '.MAIL_APP_NAME.' <mail@fastmess.ct8.pl>' . "\r\n";
+            $headers = 'From: '.MAIL_APP_NAME.' <[mail]>' . "\r\n";
+            $headers .= 'Reply-To: '.MAIL_APP_NAME.' <[mail]>' . "\r\n";
             $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
             $headers .= 'X-Mailer: PHP/' . phpversion();
             $mailSent = mail($to, $subject, $message, $headers);
