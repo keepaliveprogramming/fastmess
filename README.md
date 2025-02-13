@@ -1,30 +1,12 @@
-# Lumen PHP Framework
+# API FastMess - komunikator do domeny fastmess.ct8.pl.
+Aplikacja umożliwia:
+1. Wysłanie wiadomości.
+2. Odczytywanie wiadomości.
+3. Czatowanie się z użytkownikiem.
 
-[![Build Status](https://travis-ci.org/laravel/lumen-framework.svg)](https://travis-ci.org/laravel/lumen-framework)
-[![Total Downloads](https://img.shields.io/packagist/dt/laravel/lumen-framework)](https://packagist.org/packages/laravel/lumen-framework)
-[![Latest Stable Version](https://img.shields.io/packagist/v/laravel/lumen-framework)](https://packagist.org/packages/laravel/lumen-framework)
-[![License](https://img.shields.io/packagist/l/laravel/lumen)](https://packagist.org/packages/laravel/lumen-framework)
-
-Laravel Lumen is a stunningly fast PHP micro-framework for building web applications with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Lumen attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as routing, database abstraction, queueing, and caching.
-
-> **Note:** In the years since releasing Lumen, PHP has made a variety of wonderful performance improvements. For this reason, along with the availability of [Laravel Octane](https://laravel.com/docs/octane), we no longer recommend that you begin new projects with Lumen. Instead, we recommend always beginning new projects with [Laravel](https://laravel.com).
-
-## Official Documentation
-
-Documentation for the framework can be found on the [Lumen website](https://lumen.laravel.com/docs).
-
-## Contributing
-
-Thank you for considering contributing to Lumen! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Lumen, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Lumen framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-
-## api.fastmess.pl
-
-The API.
+# Uruchomienie aplikacji
+1. Pobierz ją do siebie na komputer.
+2. Zainstaluj, jeśli nie masz zainstalowanego `composer`'a.
+3. Zainstaluj wersję PHP - `8.1`.
+4. Uruchom komendę w terminal'u - `composer install`.
+5. Część endpointów jest w pliku [tutaj](https://github.com/zhenias/api-fastmess/blob/main/Authorization%20REST%20API.txt), w część jest w `routes/api.php`.
